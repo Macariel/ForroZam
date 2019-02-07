@@ -1,0 +1,8 @@
+*.pyc
+*.swp
+data/
+index/
+problems
+.idea/*
+files_to_check/
+music_to_add/
