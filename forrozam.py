@@ -74,7 +74,7 @@ class Storage:
     def setup(self):
         c = self.conn.cursor()
         c.execute("CREATE TABLE IF NOT EXISTS data "
-                  "(id INTEGER PRIMARY KEY, code TEXT, filename TEXT UNIQUE, artist TEXT, title TEXT, duration INTEGER)")
+                  "(code TEXT UNIQUE, filename TEXT UNIQUE, artist TEXT, title TEXT, duration INTEGER)")
         self.conn.commit()
 
     def find(self, file_path):
@@ -89,7 +89,7 @@ class Storage:
     def get_by_id(self, id):
         c = self.conn.cursor()
         id = str(id + 1)
-        c.execute("SELECT filename FROM data WHERE id=?", (id,))
+        c.execute("SELECT filename FROM data WHERE rowid=?", (id,))
         return c.fetchone()[0]
 
     def create_index(self):
