@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import subprocess
 import os
 from echoprint_server import decode_echoprint
@@ -19,11 +21,11 @@ def adjust_indices(db):
 
 
 def update_index(db, index):
-    print("Updating indices ...")
-    adjust_indices(db)
+    # print("Updating indices ...")
+    # adjust_indices(db)
 
-    print("Decoding echoprints ...")
-    all_codes = list(map(lambda x: decode_echoprint(str(x["code"]))[1], db.all()))
+    print("Get all codes ...")
+    all_codes = map(lambda x: x["code"], db.all())
 
     print("Creating Index ...")
     index.create_new_index_from_data(all_codes)

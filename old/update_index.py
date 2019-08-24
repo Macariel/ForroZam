@@ -3,8 +3,8 @@
 import os
 
 from tinydb import TinyDB
-from src.index import Index
-from src.utils import update_index
+from old.inverted_index import Index
+from old.utils import update_index
 
 index = Index()
 db_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "db.json")

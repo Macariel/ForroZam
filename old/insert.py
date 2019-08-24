@@ -4,10 +4,11 @@ import sys
 import json
 import os
 
-from tinydb import TinyDB, where, Query, JSONStorage
+from echoprint_server import decode_echoprint
+from tinydb import TinyDB, JSONStorage
 from tinydb.middlewares import CachingMiddleware
-from src.utils import create_echoprint, update_index
-from src.index import Index
+from old.utils import create_echoprint
+from old.inverted_index import Index
 
 if len(sys.argv) != 2:
     print("Not enough arguments")
@@ -41,7 +42,10 @@ try:
             problems.write("%s\n" % str(path))
             continue
 
+        # decode echoprint and set index
+        echoprint["code"] = decode_echoprint(str(echoprint["code"]))[1]
         echoprint["index"] = str(length + idx)
+
         db.insert(echoprint)
 
     #print("Saving and creating index")

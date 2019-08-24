@@ -6,3 +6,4 @@ problems
 .idea/*
 files_to_check/
 music_to_add/
+test-data/*

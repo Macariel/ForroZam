@@ -7,7 +7,7 @@ import json
 from echoprint_server import load_inverted_index, inverted_index_size, \
     decode_echoprint, create_inverted_index, query_inverted_index
 
-from utils import create_echoprint
+from old.utils import create_echoprint
 
 INDEX_DIR = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "index"))
 INDEX_NAME = "inverted_index"
