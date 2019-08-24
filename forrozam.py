@@ -10,13 +10,16 @@ import sys
 from echoprint_server import decode_echoprint, create_inverted_index, load_inverted_index, query_inverted_index
 
 DIR_NAME = os.path.dirname(__file__)
-DB_PATH = "data/sqlite.db"
-TEST_DATA = "data/all_titles.txt"
-INDEX_PATH = "data/inverted_index"
+DB_PATH = os.path.join(DIR_NAME, "data/sqlite.db")
+TEST_DATA = os.path.join(DIR_NAME, "data/all_titles.txt")
+INDEX_PATH = os.path.join(DIR_NAME, "data/inverted_index")
+DB_PROBLEMS = os.path.join(DIR_NAME, "data/db_problems")
+INDEX_PROBLEMS = os.path.join(DIR_NAME, "data/index_problems")
+ECHOPRINT_BIN = os.path.join(DIR_NAME, "bin/echoprint-codegen")
 
 
 def main():
-    storage = Storage(os.path.join(DIR_NAME, DB_PATH))
+    storage = Storage(DB_PATH)
     args = parse_arguments()
 
     if args.cmd == "find":
@@ -61,8 +64,7 @@ def parse_arguments():
 
 
 def create_echoprint(file_path):
-    path = "%s/bin/echoprint-codegen" % DIR_NAME
-    result = subprocess.Popen([path, file_path], stdout=subprocess.PIPE)
+    result = subprocess.Popen([ECHOPRINT_BIN, file_path], stdout=subprocess.PIPE)
     return result.communicate()[0]
 
 
@@ -78,7 +80,7 @@ class Storage:
         self.conn.commit()
 
     def find(self, file_path):
-        index = load_inverted_index([os.path.join(DIR_NAME, INDEX_PATH)])
+        index = load_inverted_index([INDEX_PATH])
 
         code = str(json.loads(str(create_echoprint(file_path)))[0]["code"])
         decoded = decode_echoprint(code)[1]
@@ -93,14 +95,14 @@ class Storage:
         return c.fetchone()[0]
 
     def create_index(self):
-        with open("index_problems", "w+") as f:
+        with open(INDEX_PROBLEMS, "w+") as f:
             c = self.conn.cursor()
 
             print "Fetching codes from database...",
             start = time.time()
             c.execute("SELECT code, id FROM data")
             rows = c.fetchall()
-            print str(time.time() - start)
+            print(str(time.time() - start))
 
             print "Decoding...",
             start = time.time()
@@ -112,24 +114,26 @@ class Storage:
                     raise
                 except Exception as e:
                     f.write(str(row[1]))
-            print str(time.time() - start)
+            print(str(time.time() - start))
 
-            print "Creating inverted index...",
+            print"Creating inverted index...",
             start = time.time()
             create_inverted_index(decoded, INDEX_PATH)
-            print str(time.time() - start)
+            print(str(time.time() - start))
 
     def insert_from_file(self, file_path):
         with open(file_path) as f:
             lines = f.readlines()
             max = len(lines)
-            problems = open("problems", "a+")
+            problems = open(DB_PROBLEMS, "a+")
 
             for i, line in enumerate(lines):
                 line = line.strip()
                 print("(%s/%s) Adding %s" % (i + 1, max, line))
                 try:
                     self.insert(line)
+                except KeyboardInterrupt:
+                    raise
                 except:
                     problems.write("%s\n" % line)
 
@@ -138,7 +142,7 @@ class Storage:
 
     def insert(self, file_path):
         try:
-            output = json.loads(create_echoprint(file_path))[0]
+            output = json.loads(create_echoprint(file_path.decode("UTF-8")))[0]
             metadata = output["metadata"]
 
             cursor = self.conn.cursor()
