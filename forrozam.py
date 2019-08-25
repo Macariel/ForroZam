@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import sqlite3
 import json
 import subprocess
@@ -90,42 +91,42 @@ class Storage:
 
     def get_by_id(self, id):
         c = self.conn.cursor()
-        id = str(id + 1)
-        c.execute("SELECT filename FROM data WHERE rowid=?", (id,))
+        c.execute("SELECT filename FROM data WHERE rowid=?", (str(id),))
         return c.fetchone()[0]
 
     def create_index(self):
         with open(INDEX_PROBLEMS, "w+") as f:
             c = self.conn.cursor()
 
-            print "Fetching codes from database...",
+            print("Fetching codes from database...", end="")
             start = time.time()
-            c.execute("SELECT code, id FROM data")
+            c.execute("SELECT rowid, code FROM data ORDER BY rowid ASC")
             rows = c.fetchall()
             print(str(time.time() - start))
 
-            print "Decoding...",
+            print("Decoding...", end="")
             start = time.time()
             decoded = []
-            for row in rows:
+            for rowid, code in rows:
                 try:
-                    decoded.append(decode_echoprint(str(row[0]))[1])
+                    decoded.append(decode_echoprint(str(code))[1])
                 except KeyboardInterrupt:
                     raise
                 except Exception as e:
-                    f.write(str(row[1]))
+                    f.write(str(rowid))
             print(str(time.time() - start))
 
-            print"Creating inverted index...",
+            print("Creating inverted index...", end="")
             start = time.time()
             create_inverted_index(decoded, INDEX_PATH)
             print(str(time.time() - start))
 
     def insert_from_file(self, file_path):
+        start = time.time()
         with open(file_path) as f:
             lines = f.readlines()
             max = len(lines)
-            problems = open(DB_PROBLEMS, "a+")
+            problems = open(DB_PROBLEMS, "w+")
 
             for i, line in enumerate(lines):
                 line = line.strip()
@@ -134,11 +135,14 @@ class Storage:
                     self.insert(line)
                 except KeyboardInterrupt:
                     raise
+                except sqlite3.IntegrityError as e:
+                    print("%s already in DB: %s" % (line, e))
                 except:
                     problems.write("%s\n" % line)
 
             problems.flush()
             problems.close()
+        print("Done in {}s".format(str(time.time() - start)))
 
     def insert(self, file_path):
         try:
