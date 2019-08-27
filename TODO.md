@@ -1,13 +1,9 @@
 # TODO
-## ForroZam
 - Dockerize?
 - Document dependencies and setup
 - Write tests 
-- Test with other libraries
+- Test with other libraries and compare (Panako)
+- Create python3 c-bindings for echoprint server
 
 ## ForroTagger
 - Tag data from the different sites better
-
-## ForroEmVinil
-- Check if new data has been uploaded
-- integrate tagging (the downloads are fairly similar)
